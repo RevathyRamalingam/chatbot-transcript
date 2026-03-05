@@ -1,0 +1,8 @@
+groq
+minsearch
+python-dotenv
+PyYAML
+rapidfuzz
+streamlit
+requests
+python-frontmatter
