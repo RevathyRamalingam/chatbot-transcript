@@ -29,7 +29,7 @@ class PodcastRAG:
         index,
         segments:   list[dict],
         model:      str = "llama-3.3-70b-versatile",  # free Groq model
-        top_k:      int = 5,
+        top_k:      int = 5
     ):
         """
         Args:
@@ -131,9 +131,7 @@ class PodcastRAG:
             block = (
                 f"[Context {i}]\n"
                 f"Episode  : {chunk.get('episode_title', 'Unknown')}\n"
-                f"Section  : {chunk.get('section', '')}\n"
                 f"Timestamp: {chunk.get('timestamp', '')}  "
-                    f"(second {chunk.get('start_seconds', 0)})\n"
                 f"Link     : {chunk.get('deep_link', '')}\n"
                 f"Speakers : {chunk.get('speakers', '')}\n"
                 f"Content  : {chunk.get('text', '')}\n"
@@ -145,16 +143,13 @@ class PodcastRAG:
         prompt = f"""You are a helpful podcast assistant. You answer questions about podcast episodes
 using ONLY the transcript excerpts provided below. You never invent information.
 
-ANSWER FORMAT RULES:
-1. Give a concise answer in 2-4 sentences.
-2. After each factual claim, cite the source like this:
-     [MM:SS] → <YouTube link>
-   Example: Stefan explained this using a Spotify analogy [35:39] → https://youtube.com/...&t=2139
-3. If multiple excerpts support the answer, cite all of them.
-4. Mention the speaker's name (Stefan, Alexey, etc.) when attributing a statement.
-5. If the answer is NOT found in any excerpt below, respond exactly:
-   "I couldn't find that in the available transcripts. Try rephrasing or asking about a different topic."
-6. NEVER make up timestamps, links, or facts.
+STRICT ANSWER FORMAT RULES:
+1. Provide a concise 2-4 sentence answer.
+2. Cite sources as: [MM:SS] → URL
+   Example: She studied physics [3:41] → https://www.youtube.com/watch?v=tcqBfZw41FM&t=221
+3. IMPORTANT: Just paste the raw URL. Do NOT use brackets [] or parentheses () around the link.
+
+════════════════════════════════════════
 
 ════════════════════════════════════════
 TRANSCRIPT EXCERPTS:
