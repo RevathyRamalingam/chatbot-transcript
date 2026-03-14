@@ -504,21 +504,98 @@ def load_all_episodes_from_local(episodes_dir: str = "./episodes") -> list[dict]
 # STEP 5C: Main load function (auto-detects or uses GitHub by default)
 # ─────────────────────────────────────────────────────────────
 
-def load_all_episodes(episodes_dir: str = None) -> list[dict]:
+def _local_episodes_md_files(episodes_dir: str, skip_files: set[str]) -> list[Path]:
+    """Return a list of markdown files present in the local episodes directory."""
+    episodes_path = Path(episodes_dir)
+    if not episodes_path.exists():
+        return []
+
+    return sorted(
+        f for f in episodes_path.glob("**/*.md")
+        if f.name not in skip_files
+    )
+
+
+def _download_episodes_to_local(
+    episodes_dir: str,
+    repo_owner: str = "DataTalksClub",
+    repo_name: str = "datatalksclub.github.io",
+    branch: str = "main",
+    podcast_path: str = "_podcast",
+) -> None:
+    """Download podcast .md files from GitHub into a local directory.
+
+    This is used for the first run of the app, so that later runs can
+    load transcripts from disk without hitting GitHub.
     """
-    Load all episodes from either GitHub (default) or local directory.
-    
+    from pathlib import Path
+
+    episodes_path = Path(episodes_dir)
+    episodes_path.mkdir(parents=True, exist_ok=True)
+
+    github_api_url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/contents/{podcast_path}?ref={branch}"
+    raw_github_url = f"https://raw.githubusercontent.com/{repo_owner}/{repo_name}/{branch}/{podcast_path}"
+
+    print(f"🌐 First run: downloading episodes from GitHub to '{episodes_dir}'")
+
+    try:
+        response = requests.get(github_api_url, timeout=10)
+        response.raise_for_status()
+        files = response.json()
+    except requests.exceptions.RequestException as e:
+        raise ValueError(f"Failed to fetch file list from GitHub: {e}")
+
+    SKIP_FILES = {"_template.md", "README.md"}
+    md_files = [f for f in files if f["name"].endswith(".md") and f["name"] not in SKIP_FILES]
+    md_files.sort(key=lambda f: f["name"])
+
+    if not md_files:
+        raise ValueError(f"No .md files found in {github_api_url}")
+
+    failed = []
+    for file_info in md_files:
+        filename = file_info["name"]
+        file_url = f"{raw_github_url}/{filename}"
+        local_path = episodes_path / filename
+
+        try:
+            response = requests.get(file_url, timeout=10)
+            response.raise_for_status()
+            with open(local_path, "w", encoding="utf-8") as f:
+                f.write(response.text)
+        except Exception as e:
+            print(f"     ❌ Failed to download {filename}: {e}")
+            failed.append(filename)
+
+    if failed:
+        raise ValueError(f"Failed to download files: {', '.join(failed)}")
+
+
+def load_all_episodes(episodes_dir: str = None) -> list[dict]:
+    """Load all episodes from either GitHub (default) or local directory.
+
     By default, loads from GitHub repository.
     If episodes_dir is provided, loads from local directory instead.
-    
+
+    On first run, if the local directory does not exist or contains no markdown
+    files, we automatically download the transcripts from GitHub into that
+    directory and then load from disk.
+
     Args:
         episodes_dir: Path to local episodes directory. If None, loads from GitHub.
-    
+
     Returns:
         List of all segments ready for indexing
     """
     if episodes_dir:
-        # Load from local directory
+        # Make sure there is at least one .md file locally.
+        SKIP_FILES = {"_template.md"}
+        md_files = _local_episodes_md_files(episodes_dir, SKIP_FILES)
+        if not md_files:
+            # First run: fetch from GitHub and save locally
+            _download_episodes_to_local(episodes_dir)
+
+        # Load from local directory after ensuring files exist
         return load_all_episodes_from_local(episodes_dir)
     else:
         # Load from GitHub (default)

@@ -144,11 +144,11 @@ class PodcastRAG:
 using ONLY the transcript excerpts provided below. You never invent information.
 
 STRICT ANSWER FORMAT RULES:
-1. Provide a concise 2-4 sentence answer.
+1. Provide a concise 10 sentence answer.
 2. Cite sources as: [MM:SS] → URL
    Example: She studied physics [3:41] → https://www.youtube.com/watch?v=tcqBfZw41FM&t=221
 3. IMPORTANT: Just paste the raw URL. Do NOT use brackets [] or parentheses () around the link.
-
+4. Don't mention that the transcript excerpts do not provide a clear answer which may be the case for some questions. Just answer as best you can using the provided excerpts and cite them properly.
 ════════════════════════════════════════
 
 ════════════════════════════════════════
