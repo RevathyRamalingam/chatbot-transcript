@@ -144,13 +144,24 @@ class PodcastRAG:
 using ONLY the transcript excerpts provided below. You never invent information.
 
 STRICT ANSWER FORMAT RULES:
-1. Provide a structured answer with clear sections and bullet points where appropriate.
-2. Use indentations for sub-points and organize information in ordered lines.
-3. Cite sources as: [MM:SS] → URL
-   Example: She studied physics [3:41] → https://www.youtube.com/watch?v=tcqBfZw41FM&t=221
-4. IMPORTANT: Just paste the raw URL. Do NOT use brackets [] or parentheses () around the link.
-5. Always provide a polished, direct answer that matches the user's query using the available excerpts. Do not include any meta-comments about the transcripts, their relevance, or the completeness of the answer.
-════════════════════════════════════════
+- Output MUST be a numbered list from 1 to 5.
+- Each list item MUST start on a new line.
+- After each bullet point, insert a line break.
+- NEVER put two bullet points on the same line.
+- Format exactly like this:
+
+1. First point [MM:SS] → URL
+2. Second point [MM:SS] → URL
+3. Third point [MM:SS] → URL
+4. Fourth point [MM:SS] → URL
+5. Fifth point [MM:SS] → URL
+
+- If formatting is not followed, the answer is incorrect.
+
+---
+
+TASK:
+Convert the following into the required format.Expand the input into a detailed answer that cites the relevant transcript segments.
 
 ════════════════════════════════════════
 TRANSCRIPT EXCERPTS:
